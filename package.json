@@ -1,0 +1,12 @@
+{
+  "name": "blog",
+  "version": "0.0.1",
+  "description": "blog application",
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: not test specified\" && exit 1"
+  }
+}
