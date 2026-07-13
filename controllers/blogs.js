@@ -5,7 +5,13 @@ const User = require('../models/user')
 require('node:dns/promises').setServers(['1.1.1.1', '8.8.8.8'])
 
 blogsRouter.get('/', (request, response) => {
-  Blog.find({}).then((blogs) => {
+  Blog.find({})
+  .populate('user',{
+    username : 1,
+    name: 1,
+    id: 1
+  })
+  .then((blogs) => {
     response.json(blogs)
   })
 })
@@ -35,12 +41,16 @@ blogsRouter.post('/', async (request, response) => {
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
 
-  response.status(201).json(result)
+  response.status(201).json(savedBlog)
 })
 
 
 blogsRouter.get('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id)
+  const blog = await Blog.findById(request.params.id).populate('user',{
+    username : 1,
+    name: 1,
+    id: 1
+  })
   if (blog) {
     response.json(blog)
   } else {
