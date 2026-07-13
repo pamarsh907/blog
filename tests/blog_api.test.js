@@ -1,4 +1,4 @@
-const { test, after, beforeEach } = require('node:test')
+const { test, after, beforeEach, describe } = require('node:test')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
@@ -95,6 +95,48 @@ test('if url is missing return 400 Bad Reqeust', async () => {
 
   assert.strictEqual(response.status, 400)
 })
+
+describe('deletion of a blog', () => {
+  test('succeeds with status code 204 if id is valid', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToDelete = blogsAtStart[0]
+    console.log('blogToDelete :', blogToDelete)
+
+    await api.delete(`/api/blogs/${blogToDelete.id}`).expect(204)
+
+    const blogsAtEnd = await helper.blogsInDb()
+
+    const ids = blogsAtEnd.map(n => n.id)
+    assert(!ids.includes(blogToDelete.id))
+
+    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
+  })
+})
+
+describe('updating likes', () => {
+  test('succeeds if able to update likes', async () => {
+    //get blog post
+    const originalBlog = await helper.getOneBlog()
+
+    const newBlog = {
+      title: originalBlog.title,
+      author: originalBlog.author,
+      url: originalBlog.url,
+      likes: originalBlog.likes + 1
+    }
+
+    //update blog likes by 1
+    await api.put(`/api/blogs/${originalBlog.id}`)
+      .send(newBlog)
+
+    //get blog post again
+    const updatedBlog = await helper.getOneBlog()
+
+    assert.strictEqual(originalBlog.likes + 1, updatedBlog.likes)
+    assert.notStrictEqual(originalBlog.likes, updatedBlog.likes)
+  })
+})
+
 
 after(async () => {
   await mongoose.connection.close()

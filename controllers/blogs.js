@@ -45,6 +45,7 @@ blogsRouter.delete('/:id', async (request, response) => {
 })
 
 blogsRouter.put('/:id', (request, response, next) => {
+  console.log('request.body :', request.body)
   const { title, author, url, likes } = request.body
 
   Blog.findById(request.params.id)
@@ -53,8 +54,8 @@ blogsRouter.put('/:id', (request, response, next) => {
         return response.status(404).end()
       }
 
-      blog.title = content
-      blog.author = important
+      blog.title = title
+      blog.author = author
       blog.url = url
       blog.likes = likes
 
