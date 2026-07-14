@@ -79,7 +79,6 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
 })
 
 blogsRouter.put('/:id', (request, response, next) => {
-  console.log('request.body :', request.body)
   const { title, author, url, likes } = request.body
 
   Blog.findById(request.params.id)

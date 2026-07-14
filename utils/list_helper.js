@@ -43,13 +43,37 @@ const initialBlogs = [
   }
 ]
 
+// const hashedPassword = await bcrypt.hash('password', 10);
+
+// const initialUsers = [
+//   {
+//     username: 'bobby',
+//     name: 'bob',
+//     password: hashedPassword,
+//     blogs: []
+//   },
+//   {
+//     username: 'jimbo',
+//     name: 'jim',
+//     password: hashedPassword,
+//     blogs: []
+//   },
+//   {
+//     username: 'pete',
+//     name: 'peter',
+//     password: hashedPassword,
+//     blogs: []
+//   },
+// ]
+
+
 const blogsInDb = async () => {
   const blogs = await Blog.find({})
   return blogs.map(blog => blog.toJSON())
 }
 
 const getOneBlog = async () => {
-  const blog = await Blog.findOne({title: 'blog 1'})
+  const blog = await Blog.findOne({title: 'First blog'})
   return blog.toJSON()
 }
 
@@ -63,6 +87,20 @@ const usersInDb = async () => {
   return users.map(user => user.toJSON())
 }
 
+const tokenExtractor = (request) => {
+  const authorization = request.get('Authorization')
+  console.log('Authorization :', authorization)
+  if (authorization && authorization.startsWith('Bearer ')) {
+    console.debug('inside extractor if: ', authorization)
+    const token = authorization.replace('Bearer ', '')
+    console.log('token :', token)
+    return token
+  } else {
+    console.debug('false branch of if')
+    return null
+  }
+}
+
 module.exports = {
   dummy,
   totalLikes,
@@ -71,5 +109,6 @@ module.exports = {
   blogsInDb,
   blogsInDbLean,
   getOneBlog,
-  usersInDb
+  usersInDb,
+  tokenExtractor
 }
