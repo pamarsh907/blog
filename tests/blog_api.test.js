@@ -250,6 +250,21 @@ describe('updating likes', () => {
   })
 })
 
+test('adding blog without token fails with 401', async () => {
+  const newBlog = {
+    title: 'best sandwich in the world',
+    author: 'joey triviani',
+    url: 'blah.what.com',
+    likes: 2
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(401)
+    .expect('Content-Type', /application\/json/)
+})
+
 
 after(async () => {
   await mongoose.connection.close()
