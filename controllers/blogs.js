@@ -8,14 +8,14 @@ require('node:dns/promises').setServers(['1.1.1.1', '8.8.8.8'])
 
 blogsRouter.get('/', (request, response) => {
   Blog.find({})
-  .populate('user',{
-    username : 1,
-    name: 1,
-    id: 1
-  })
-  .then((blogs) => {
-    response.json(blogs)
-  })
+    .populate('user', {
+      username: 1,
+      name: 1,
+      id: 1
+    })
+    .then((blogs) => {
+      response.json(blogs)
+    })
 })
 
 blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
@@ -42,13 +42,21 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
   user.blogs = user.blogs.concat(savedBlog._id)
   await user.save()
 
-  response.status(201).json(savedBlog)
+  Blog.findById(savedBlog._id)
+  .populate('user', {
+    username: 1,
+    name: 1,
+    id: 1
+  })
+  .then((savedBlog) => {
+    response.status(201).json(savedBlog)
+  })
 })
 
 
 blogsRouter.get('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id).populate('user',{
-    username : 1,
+  const blog = await Blog.findById(request.params.id).populate('user', {
+    username: 1,
     name: 1,
     id: 1
   })
@@ -66,36 +74,38 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
     return response.status(400).json({ error: 'userId missing or not valid' })
   }
 
-  const blog = await Blog.findById(request.params.id).populate('user',{
+  const blog = await Blog.findById(request.params.id).populate('user', {
     id: 1
   })
 
-  if ( blog.user.id.toString() === user.id.toString() ) {
+  if (blog.user.id.toString() === user.id.toString()) {
     await Blog.findByIdAndDelete(request.params.id)
     response.status(204).end()
   } else {
-    return response.status(400).json({ error: 'invalid user, cannot delete'})
+    return response.status(400).json({ error: 'invalid user, cannot delete' })
   }
 })
 
-blogsRouter.put('/:id', (request, response, next) => {
-  const { title, author, url, likes } = request.body
+blogsRouter.put('/:id', middleware.userExtractor, async (request, response, next) => {
+  const { user, title, author, url, likes } = request.body
 
-  Blog.findById(request.params.id)
-    .then(blog => {
-      if (!blog) {
-        return response.status(404).end()
-      }
+  if (!user) {
+    return response.status(400).json({ error: 'userId missing or not valid' })
+  }
 
-      blog.title = title
-      blog.author = author
-      blog.url = url
-      blog.likes = likes
+  const blog = await Blog.findById(request.params.id).populate('user', {
+    id: 1
+  })
 
-      return blog.save().then((updatedBlog) => {
-        response.json(updatedBlog)
-      })
-    })
+  blog.user = user,
+  blog.title = title,
+  blog.author = author,
+  blog.url = url,
+  blog.likes = likes
+
+  return blog.save().then((updatedBlog) => {
+    response.json(updatedBlog)
+  })
     .catch(error => next(error))
 })
 
