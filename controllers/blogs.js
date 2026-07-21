@@ -87,11 +87,14 @@ blogsRouter.delete('/:id', middleware.userExtractor, async (request, response) =
 })
 
 blogsRouter.put('/:id', middleware.userExtractor, async (request, response, next) => {
-  const { user, title, author, url, likes } = request.body
+  const requestUser = request.user
+  console.log('requestUser :', requestUser)
 
-  if (!user) {
+  if (!requestUser) {
     return response.status(400).json({ error: 'userId missing or not valid' })
   }
+
+  const { user, title, author, url, likes } = request.body
 
   const blog = await Blog.findById(request.params.id).populate('user', {
     id: 1
